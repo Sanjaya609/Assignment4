@@ -2,11 +2,14 @@ const ApiUrl="https://infodev-server.herokuapp.com/api/todos";
 
 
 document.addEventListener('DOMContentLoaded',()=>{
-    //for showing tasks initially 
-    getTodos();
+
     //For add and update button
     let updateBtn= document.querySelector("#update");
     updateBtn.style.display="none";
+
+
+    //for showing tasks initially 
+    getTodos();
     //To submit form data
     postData();
     //To delete task
@@ -72,7 +75,7 @@ function showtasks(data){
             li.innerHTML=`<div><h6 class="title completed">${todos.name}<span class="ml-2 badge badge-${color}">${priority}}</span></h6>
             <p class="Description">${todos.description}</p></div>
             <div>
-            <button class="btn btn-danger" id=${todos.id}><i class="far fa-trash-alt"></i></button>
+            <button class="btn btn-danger" id=${todos._id}><i class="far fa-trash-alt" id=${todos._id}></i></button>
             </div>`;
         }else{
             li.innerHTML=`
@@ -81,9 +84,9 @@ function showtasks(data){
                 <p class="description">${todos.description}</p>
             </div>
             <div>
-                <button class="btn btn-success"id=${todos.id}><i class="fas fa-check" id=${todos.id}></i></i></button>
-                <button class="btn btn-warning"id=${todos.id}><i class="fas fa-pencil" id=${todos.id}></i></i></button>
-                <button class="btn btn-danger" id=${todos.id}><i class="far fa-trash-alt" id=${todos.id}></i></button>
+                <button class="btn btn-success"id=${todos._id}><i class="fas fa-check" id=${todos._id}></i></i></button>
+                <button class="btn btn-warning"id=${todos._id}><i class="fas fa-pencil" id=${todos._id}></i></i></button>
+                <button class="btn btn-danger" id=${todos._id}><i class="far fa-trash-alt" id=${todos._id}></i></button>
             </div>`;
         }
         lisArray.push(li);
@@ -132,22 +135,14 @@ function showtasks(data){
 function deleteTodo(){
     const lists = document.querySelector("#lecture-list ul");
     lists.addEventListener("click", (event) => {
-      //console.log(event.target.classList)
-      if (event.target.classList[1] === "btn-danger") {
-        //console.log(event.target.parentElement.parentElement.id);
-
-        let target = event.target.parentElement.parentElement.id;
-        removeTodo(target);
-
-      } else if (event.target.classList[1] === "fa-trash-alt") {
-        let target = event.target.parentElement.parentElement.parentElement.id;
-        removeTodo(target);
-      }
+        if(event.target.className==="btn btn-danger" || event.target.className==="far fa-trash-alt"){
+            let target=event.target.id;
+            removeTodo(target);
+        }
     });
     //function to remove task
     function removeTodo(id){
         //console.log(id);
-
         axios({
             method:"delete",
             url:`https://infodev-server.herokuapp.com/api/todos/${id}`
@@ -155,58 +150,31 @@ function deleteTodo(){
             alert("Task has been deleted successfully");
             getTodos();
         }).catch((err)=>{console.log(err)});
-    }
-
-
-    //I tried doing this way but it crashed the server each time so i took help to fetch the id of button clicked
-    /* function deleteTask(){
-    let removeBtn=document.getElementsByClassName("btn btn-danger")
-    console.log(removeBtn);
-    console.log(removeBtn.length);
-    for (var i = 0; i < removeBtn.length; i++) {
-        removeBtn[i].addEventListener("click",(event)=>{
-            var id=event.target.parentElement.parentElement;
-            axios({
-                method: "delete",
-                url: `https://infodev-server.herokuapp.com/api/todos/${id}`,
-              })
-                .then((res) => {
-                  console.log("Todo deleted successfully");
-                  getTodos();
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            });
-        }
-    } */
+    }   
 }
 //To mark as complete
 function markComplete(){
     const lists = document.querySelector("#lecture-list ul");
     lists.addEventListener("click", (event) => {
-        //console.log(event.target.classList)
-        if (event.target.classList[1] === "btn-success") {
-            //console.log(event.target.parentElement.parentElement);
-            var target = event.target.parentElement.parentElement.id;
-  
-        } else if (event.target.classList[1] === "fa-check") {
-            var target = event.target.parentElement.parentElement.parentElement.id;
-        };
-        completeTodo(target);
-        function completeTodo(id){
-            axios({
-                method:'put',
-                url:`https://infodev-server.herokuapp.com/api/todos/${id}`,
-                data:{
-                    completed:true,
-                }
-            }).then((response)=>{
-                getTodos();
-        }).catch((err)=>{console.log(err);
-        })
+        if(event.target.className==="btn btn-success" || event.target.className==="fas fa-check"){
+            let target=event.target.id;
+            completeTodo(target);
         }
     });
+    //function to update the completed status
+    function completeTodo(id){
+    axios({
+        method:'put',
+        url:`https://infodev-server.herokuapp.com/api/todos/${id}`,
+        data:{
+            completed:true,
+        }
+        }).then((response)=>{
+            getTodos();
+        }).catch((err)=>{
+            console.log(err);
+        });
+        };
 }
 
 
@@ -215,16 +183,38 @@ function updateTask(){
     //To edit the task
     const lists = document.querySelector("#lecture-list ul");
     lists.addEventListener("click", (event) => {
+    
         
-        let updateBtn= document.querySelector("#update");
-        updateBtn.style.display="block";
-        document.getElementById("submit").style.display="none";
-        //console.log(event.target.classList)
+        /* I tried this way to access the details of task clicked from API but get method
+        was not responding based on the parameter so i used another method.
+
+        
+        if(event.target.className==="btn btn-warning" || event.target.className==="fas fa-pencil"){
+            let targetId=event.target.id;
+            getSpecificTodo(targetId);     
+            async function getSpecificTodo(id){
+                console.log(id);
+                let specificTodo=(await axios({
+                    method:'get',
+                    url:`https://infodev-server.herokuapp.com/api/todos/${id}`
+                }).catch((err)=>{console.log(err)}));
+                console.log(specificTodo);  
+            };
+        };
+         */
+
+
         if (event.target.classList[1] === "btn-warning") {
             //console.log(event.target.parentElement.parentElement);
             var target = event.target.parentElement.parentElement;
+            let updateBtn= document.querySelector("#update");
+            updateBtn.style.display="block";
+            document.getElementById("submit").style.display="none";
         } else if (event.target.classList[1] === "fa-pencil") {
             var target = event.target.parentElement.parentElement.parentElement;
+            let updateBtn= document.querySelector("#update");
+            updateBtn.style.display="block";
+            document.getElementById("submit").style.display="none";
         };
         
         let name = target.children[0].children[0].childNodes[0].data;
