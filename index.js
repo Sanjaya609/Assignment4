@@ -1,15 +1,99 @@
 const ApiUrl="https://infodev-server.herokuapp.com/api/todos";
 
 
-
-
-//for showing tasks initially 
 document.addEventListener('DOMContentLoaded',()=>{
+    //for showing tasks initially 
     getTodos();
-    
+    //For add and update button
     let updateBtn= document.querySelector("#update");
     updateBtn.style.display="none";
-    //To post data from form
+    //To submit form data
+    postData();
+    //To delete task
+    deleteTodo();
+    //To mark complete
+    markComplete();
+
+    //To update task
+    updateTask();
+
+});
+
+//To call data in API 
+async function getTodos(){
+    let Todos= (await axios({
+        method:'get',
+        url:ApiUrl
+    }).catch((err)=>{console.log(err)})).data;
+
+    //console.log(Todos);
+    showtasks(Todos);
+};
+
+//To show data in list
+function showtasks(data){
+    const lists= document.querySelector("#lecture-list ul");
+    const lisArray= [];
+    let priority,color;
+    data.forEach((todos)=>{
+        const li=document.createElement('li');
+        li.id=todos._id;
+        if (todos.priority===0){
+            priority="Low";
+            color="info";
+        }else if (todos.priority===1){
+            priority="Medium";
+            color="warning"
+        }else{
+            priority="High";
+            color="danger";
+        }
+
+        /* const li=document.createElement('li');
+        const heading=document.createElement('h6');
+        const span=document.createElement('span')
+        const p=document.createElement('p');
+        const successButton= document.createElement('button');
+        const editButton=document.createElement('button');
+        const removeButton= document.createElement('button');
+
+        heading.className="title";
+        span.className="ml-2 badge badge-danger";
+        p.className="description";
+        successButton.className="btn btn-success";
+        editButton.className="btn btn-warning";
+        removeButton.className="btn btn-danger";
+    
+        successButton.innerHTML='<i class="fas fa-check"></i>';
+        editButton.innerHTML='<i class="fas fa-pencil"></i>';
+        removeButton.innerHTML='<i class="far fa-trash-alt"></i>'; */
+
+        if (todos.completed===true){
+            li.innerHTML=`<div><h6 class="title completed">${todos.name}<span class="ml-2 badge badge-${color}">${priority}}</span></h6>
+            <p class="Description">${todos.description}</p></div>
+            <div>
+            <button class="btn btn-danger" id=${todos.id}><i class="far fa-trash-alt"></i></button>
+            </div>`;
+        }else{
+            li.innerHTML=`
+            <div>
+                <h6 class="title ">${todos.name}<span class="ml-2 badge badge-${color}">${priority}</span></h6>
+                <p class="description">${todos.description}</p>
+            </div>
+            <div>
+                <button class="btn btn-success"id=${todos.id}><i class="fas fa-check" id=${todos.id}></i></i></button>
+                <button class="btn btn-warning"id=${todos.id}><i class="fas fa-pencil" id=${todos.id}></i></i></button>
+                <button class="btn btn-danger" id=${todos.id}><i class="far fa-trash-alt" id=${todos.id}></i></button>
+            </div>`;
+        }
+        lisArray.push(li);
+    });
+    lists.replaceChildren(...lisArray);
+};
+
+
+ //To post data from form
+ function postData(){
     const form= document.querySelector("#lecture-add");
     form.addEventListener("submit", (event)=>{
         event.preventDefault();
@@ -42,9 +126,10 @@ document.addEventListener('DOMContentLoaded',()=>{
         document.querySelector('#priority').value=0;
         document.querySelector('#description').value="";
     });
+    }
 
-
-    //To delete task
+//To delete task
+function deleteTodo(){
     const lists = document.querySelector("#lecture-list ul");
     lists.addEventListener("click", (event) => {
       //console.log(event.target.classList)
@@ -95,10 +180,10 @@ document.addEventListener('DOMContentLoaded',()=>{
             });
         }
     } */
-
-
-
-    //To mark as complete
+}
+//To mark as complete
+function markComplete(){
+    const lists = document.querySelector("#lecture-list ul");
     lists.addEventListener("click", (event) => {
         //console.log(event.target.classList)
         if (event.target.classList[1] === "btn-success") {
@@ -122,9 +207,16 @@ document.addEventListener('DOMContentLoaded',()=>{
         })
         }
     });
+}
 
+
+//To update task
+function updateTask(){
     //To edit the task
+    const lists = document.querySelector("#lecture-list ul");
     lists.addEventListener("click", (event) => {
+        
+        let updateBtn= document.querySelector("#update");
         updateBtn.style.display="block";
         document.getElementById("submit").style.display="none";
         //console.log(event.target.classList)
@@ -188,77 +280,4 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
     });
-});
-
-//To call data in API 
-async function getTodos(){
-    let Todos= (await axios({
-        method:'get',
-        url:ApiUrl
-    }).catch((err)=>{console.log(err)})).data;
-
-    //console.log(Todos);
-    showtasks(Todos);
-};
-
-//To show data in list
-
-function showtasks(data){
-    const lists= document.querySelector("#lecture-list ul");
-    const lisArray= [];
-    let priority,color;
-    data.forEach((todos)=>{
-        const li=document.createElement('li');
-        li.id=todos._id;
-        if (todos.priority===0){
-            priority="Low";
-            color="info";
-        }else if (todos.priority===1){
-            priority="Medium";
-            color="warning"
-        }else{
-            priority="High";
-            color="danger";
-        }
-
-        /* const li=document.createElement('li');
-        const heading=document.createElement('h6');
-        const span=document.createElement('span')
-        const p=document.createElement('p');
-        const successButton= document.createElement('button');
-        const editButton=document.createElement('button');
-        const removeButton= document.createElement('button');
-
-        heading.className="title";
-        span.className="ml-2 badge badge-danger";
-        p.className="description";
-        successButton.className="btn btn-success";
-        editButton.className="btn btn-warning";
-        removeButton.className="btn btn-danger";
-    
-        successButton.innerHTML='<i class="fas fa-check"></i>';
-        editButton.innerHTML='<i class="fas fa-pencil"></i>';
-        removeButton.innerHTML='<i class="far fa-trash-alt"></i>'; */
-
-        if (todos.completed===true){
-            li.innerHTML=`<div><h6 class="title completed">${todos.name}<span class="ml-2 badge badge-${color}">${priority}}</span></h6>
-            <p class="Description">${todos.description}</p></div>
-            <div>
-            <button class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
-            </div>`;
-        }else{
-            li.innerHTML=`
-            <div>
-                <h6 class="title ">${todos.name}<span class="ml-2 badge badge-${color}">${priority}</span></h6>
-                <p class="description">${todos.description}</p>
-            </div>
-            <div>
-                <button class="btn btn-success"><i class="fas fa-check"></i></i></button>
-                <button class="btn btn-warning"><i class="fas fa-pencil"></i></i></button>
-                <button class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
-            </div>`;
-        }
-        lisArray.push(li);
-    });
-    lists.replaceChildren(...lisArray);
-};
+}
