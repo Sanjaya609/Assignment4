@@ -1,78 +1,5 @@
 const ApiUrl="https://infodev-server.herokuapp.com/api/todos";
 
-//To call data in API 
-async function getTodos(){
-    let Todos= (await axios({
-        method:'get',
-        url:ApiUrl
-    }).catch((err)=>{console.log(err)})).data;
-
-    //console.log(Todos);
-    showtasks(Todos);
-};
-
-
-//To show data in list
-
-function showtasks(data){
-    const lists= document.querySelector("#lecture-list ul");
-    const lisArray= [];
-    let priority,color;
-    data.forEach((todos)=>{
-        const li=document.createElement('li');
-        li.id=todos._id;
-        if (todos.priority===0){
-            priority="Low";
-            color="info";
-        }else if (todos.priority===1){
-            priority="Medium";
-            color="warning"
-        }else{
-            priority="High";
-            color="danger";
-        }
-
-        /* const li=document.createElement('li');
-        const heading=document.createElement('h6');
-        const span=document.createElement('span')
-        const p=document.createElement('p');
-        const successButton= document.createElement('button');
-        const editButton=document.createElement('button');
-        const removeButton= document.createElement('button');
-
-        heading.className="title";
-        span.className="ml-2 badge badge-danger";
-        p.className="description";
-        successButton.className="btn btn-success";
-        editButton.className="btn btn-warning";
-        removeButton.className="btn btn-danger";
-    
-        successButton.innerHTML='<i class="fas fa-check"></i>';
-        editButton.innerHTML='<i class="fas fa-pencil"></i>';
-        removeButton.innerHTML='<i class="far fa-trash-alt"></i>'; */
-
-        if (todos.completed===true){
-            li.innerHTML=`<div><h6 class="title completed">${todos.name}<span class="ml-2 badge badge-${color}">${priority}}</span></h6>
-            <p class="Description">${todos.description}</p></div>
-            <div>
-            <button class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
-            </div>`;
-        }else{
-            li.innerHTML=`
-            <div>
-                <h6 class="title ">${todos.name}<span class="ml-2 badge badge-${color}">${priority}</span></h6>
-                <p class="description">${todos.description}</p>
-            </div>
-            <div>
-                <button class="btn btn-success"><i class="fas fa-check"></i></i></button>
-                <button class="btn btn-warning"><i class="fas fa-pencil"></i></i></button>
-                <button class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
-            </div>`;
-        }
-        lisArray.push(li);
-    });
-    lists.replaceChildren(...lisArray);
-}
 
 
 
@@ -80,6 +7,8 @@ function showtasks(data){
 document.addEventListener('DOMContentLoaded',()=>{
     getTodos();
     
+    let updateBtn= document.querySelector("#update");
+    updateBtn.style.display="none";
     //To post data from form
     const form= document.querySelector("#lecture-add");
     form.addEventListener("submit", (event)=>{
@@ -174,25 +103,162 @@ document.addEventListener('DOMContentLoaded',()=>{
         //console.log(event.target.classList)
         if (event.target.classList[1] === "btn-success") {
             //console.log(event.target.parentElement.parentElement);
-            var target = event.target.parentElement.parentElement;
+            var target = event.target.parentElement.parentElement.id;
   
         } else if (event.target.classList[1] === "fa-check") {
-            var target = event.target.parentElement.parentElement.parentElement;
-        }
-        completeTodo(target.id);
+            var target = event.target.parentElement.parentElement.parentElement.id;
+        };
+        completeTodo(target);
         function completeTodo(id){
             axios({
                 method:'put',
                 url:`https://infodev-server.herokuapp.com/api/todos/${id}`,
                 data:{
-                    completed:true
+                    completed:true,
                 }
             }).then((response)=>{
-                alert("Updated");
                 getTodos();
         }).catch((err)=>{console.log(err);
         })
         }
     });
 
-})
+    //To edit the task
+    lists.addEventListener("click", (event) => {
+        updateBtn.style.display="block";
+        document.getElementById("submit").style.display="none";
+        //console.log(event.target.classList)
+        if (event.target.classList[1] === "btn-warning") {
+            //console.log(event.target.parentElement.parentElement);
+            var target = event.target.parentElement.parentElement;
+        } else if (event.target.classList[1] === "fa-pencil") {
+            var target = event.target.parentElement.parentElement.parentElement;
+        };
+        
+        let name = target.children[0].children[0].childNodes[0].data;
+        let description = target.children[0].children[1].innerText;
+        let priorityCheck = target.children[0].children[0].children[0].innerText;
+        let priority;
+        let id=target.id;
+        if (priorityCheck === "Low") {
+        priority = 0;
+        } else if (priorityCheck== "Medium") {
+        priority = 1;
+        } else {
+        priority = 2;
+        }
+        //console.log(name,description,priority);
+        document.querySelector('#todo-task').value=name;
+        document.querySelector('#priority').value=priority;
+        document.querySelector('#description').value=description;
+
+        //console.log(updateBtn.id);
+        if(updateBtn.id==="update"){
+            updateBtn.addEventListener("click",(event)=>{
+                event.preventDefault();
+                let updatedName=document.querySelector('#todo-task').value;
+                let updatedPriority=document.querySelector('#priority').value;
+                let updatedDescription=document.querySelector('#description').value;
+                //console.log(updatedName,updatedPriority,updatedDescription);
+                let updatedData={
+                    name:updatedName,
+                    priority:updatedPriority,
+                    description:updatedDescription,
+                };
+                updateTodos(updatedData,id);
+            })
+        }
+
+        function updateTodos(updatedData){
+            axios({
+                method:"put",
+                url:`https://infodev-server.herokuapp.com/api/todos/${id}`,
+                data:updatedData,
+            }).then((response)=>{
+                alert('Successfully Updated');
+                getTodos();
+                updateBtn.style.display="none";
+                document.getElementById("submit").style.display="block";
+
+            }).catch((err)=>console.log(err));
+            document.querySelector('#todo-task').value="";
+            document.querySelector('#priority').value=0;
+            document.querySelector('#description').value="";
+        }
+
+
+    });
+});
+
+//To call data in API 
+async function getTodos(){
+    let Todos= (await axios({
+        method:'get',
+        url:ApiUrl
+    }).catch((err)=>{console.log(err)})).data;
+
+    //console.log(Todos);
+    showtasks(Todos);
+};
+
+//To show data in list
+
+function showtasks(data){
+    const lists= document.querySelector("#lecture-list ul");
+    const lisArray= [];
+    let priority,color;
+    data.forEach((todos)=>{
+        const li=document.createElement('li');
+        li.id=todos._id;
+        if (todos.priority===0){
+            priority="Low";
+            color="info";
+        }else if (todos.priority===1){
+            priority="Medium";
+            color="warning"
+        }else{
+            priority="High";
+            color="danger";
+        }
+
+        /* const li=document.createElement('li');
+        const heading=document.createElement('h6');
+        const span=document.createElement('span')
+        const p=document.createElement('p');
+        const successButton= document.createElement('button');
+        const editButton=document.createElement('button');
+        const removeButton= document.createElement('button');
+
+        heading.className="title";
+        span.className="ml-2 badge badge-danger";
+        p.className="description";
+        successButton.className="btn btn-success";
+        editButton.className="btn btn-warning";
+        removeButton.className="btn btn-danger";
+    
+        successButton.innerHTML='<i class="fas fa-check"></i>';
+        editButton.innerHTML='<i class="fas fa-pencil"></i>';
+        removeButton.innerHTML='<i class="far fa-trash-alt"></i>'; */
+
+        if (todos.completed===true){
+            li.innerHTML=`<div><h6 class="title completed">${todos.name}<span class="ml-2 badge badge-${color}">${priority}}</span></h6>
+            <p class="Description">${todos.description}</p></div>
+            <div>
+            <button class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
+            </div>`;
+        }else{
+            li.innerHTML=`
+            <div>
+                <h6 class="title ">${todos.name}<span class="ml-2 badge badge-${color}">${priority}</span></h6>
+                <p class="description">${todos.description}</p>
+            </div>
+            <div>
+                <button class="btn btn-success"><i class="fas fa-check"></i></i></button>
+                <button class="btn btn-warning"><i class="fas fa-pencil"></i></i></button>
+                <button class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
+            </div>`;
+        }
+        lisArray.push(li);
+    });
+    lists.replaceChildren(...lisArray);
+};
