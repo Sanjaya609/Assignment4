@@ -4,9 +4,7 @@ const ApiUrl="https://infodev-server.herokuapp.com/api/todos";
 document.addEventListener('DOMContentLoaded',()=>{
 
     //For add and update button
-    let updateBtn= document.querySelector("#update");
-    updateBtn.style.display="none";
-
+    document.querySelector("#update").style.display="none";
 
     //for showing tasks initially 
     getTodos();
@@ -188,7 +186,7 @@ function updateTask(){
         /* I tried this way to access the details of task clicked from API but get method
         was not responding based on the parameter so i used another method.
 
-        
+
         if(event.target.className==="btn btn-warning" || event.target.className==="fas fa-pencil"){
             let targetId=event.target.id;
             getSpecificTodo(targetId);     
@@ -203,20 +201,17 @@ function updateTask(){
         };
          */
 
+        if(event.target.className==="btn btn-warning" || event.target.className==="fas fa-pencil"){
+            let targetId=event.target.id;
+            var target= document.getElementById(`${targetId}`);
+            
+            //console.log(target);
 
-        if (event.target.classList[1] === "btn-warning") {
-            //console.log(event.target.parentElement.parentElement);
-            var target = event.target.parentElement.parentElement;
-            let updateBtn= document.querySelector("#update");
+            var updateBtn= document.querySelector("#update");
             updateBtn.style.display="block";
             document.getElementById("submit").style.display="none";
-        } else if (event.target.classList[1] === "fa-pencil") {
-            var target = event.target.parentElement.parentElement.parentElement;
-            let updateBtn= document.querySelector("#update");
-            updateBtn.style.display="block";
-            document.getElementById("submit").style.display="none";
-        };
-        
+        }
+
         let name = target.children[0].children[0].childNodes[0].data;
         let description = target.children[0].children[1].innerText;
         let priorityCheck = target.children[0].children[0].children[0].innerText;
@@ -235,21 +230,21 @@ function updateTask(){
         document.querySelector('#description').value=description;
 
         //console.log(updateBtn.id);
-        if(updateBtn.id==="update"){
-            updateBtn.addEventListener("click",(event)=>{
-                event.preventDefault();
-                let updatedName=document.querySelector('#todo-task').value;
-                let updatedPriority=document.querySelector('#priority').value;
-                let updatedDescription=document.querySelector('#description').value;
-                //console.log(updatedName,updatedPriority,updatedDescription);
-                let updatedData={
-                    name:updatedName,
-                    priority:updatedPriority,
-                    description:updatedDescription,
-                };
+        updateBtn.addEventListener("click",(event)=>{
+            event.preventDefault();
+            let updatedName=document.querySelector('#todo-task').value;
+            let updatedPriority=document.querySelector('#priority').value;
+            let updatedDescription=document.querySelector('#description').value;
+            //console.log(updatedName,updatedPriority,updatedDescription);
+            let updatedData={
+                name:updatedName,
+                priority:updatedPriority,
+                description:updatedDescription,
+            };
                 updateTodos(updatedData,id);
+                updateBtn.style.display="none";
+                document.getElementById("submit").style.display="block";
             })
-        }
 
         function updateTodos(updatedData){
             axios({
@@ -259,9 +254,6 @@ function updateTask(){
             }).then((response)=>{
                 alert('Successfully Updated');
                 getTodos();
-                updateBtn.style.display="none";
-                document.getElementById("submit").style.display="block";
-
             }).catch((err)=>console.log(err));
             document.querySelector('#todo-task').value="";
             document.querySelector('#priority').value=0;
